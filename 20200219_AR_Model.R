@@ -84,7 +84,7 @@ x5 = c(-0.89, -0.53, 0.54, -0.26, -1.34, -1.97, -0.35, 0.46, -0.08, -1.13, 0.04,
        -1.18)
 mean(x5)
 plot.ts(x5)
-ab5 = acf(x5)
+ab5 = acf(x5) # Cut off after lag 1
 ab5
 ma1 = arima(x5, order=c(0,0,1))
 ma1
