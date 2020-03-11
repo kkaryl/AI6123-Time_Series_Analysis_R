@@ -1,5 +1,5 @@
-y = scan("C:/Users/Karyl/Documents/Karyl/Coding/R/NTUTimeSeriesAnalysisR/data/weekly sales of tech video.txt")
-plot(1:161,xlim=c(0,200),ylim=c(20,100))
+y = scan("./data/weekly sales of tech video.txt")
+#plot(1:161,xlim=c(0,200),ylim=c(20,100))
 plot(1:161,y,xlim=c(0,200),ylim=c(20,100))
 min(y)
 max(y)
@@ -21,6 +21,10 @@ min(z)
 max(z)
 acf(z) #cut off after lag 6
 pacf(z) #cut off after lag 5 
+
+ts.yw <- ar.yw(z, order.max = 6)
+ts.yw
+summary(ts.yw)
 
 fit = arima(x = y, order = c(0,1,6)) #MA(6)
 fit
