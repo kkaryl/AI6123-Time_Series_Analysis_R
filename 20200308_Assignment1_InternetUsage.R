@@ -14,67 +14,108 @@ plot(1:100, y, xlim=c(0,100),ylim=c(50,250),
      main="Number of users connected to internet over Time", 
      xlab="Time (minute)", ylab="Number of users connected")
 lines(1:100,y,type="l") # plot line
-acf(y)  # does not cut off (dies down quickly)
+acf(y, lag.max = 40)  # does not cut off until lag 32 (dies down quickly)
 pacf(y) # cut off after lag 2
 
-# Apply one time differencing
-z=diff(y) 
-length(z)
-min(z) # find min z
-max(z) # find min z
-plot(1:99,z,xlim=c(0,100),ylim=c(-15,15)) # Plot time plot after differencing
-lines(1:99,z,type="l")
-acf(z)  # does not cut off (dies down quickly)
-pacf(z) # cut off after lag 3
+# Apply one time differencing (z1)
+z1=diff(y)
+length(z1)
+min(z1)
+max(z1)
+plot(1:99,z1,xlim=c(0,100),ylim=c(-15,15), main="Time Plot after one-time differencing") # Plot time plot after differencing
+lines(1:99,z1,type="l")
+acf(z1, lag.max = 40)  # does not cut off until lag  24 (dies down quickly)
+pacf(z1) # cut off after lag 3
 
-ts.yw <- ar.yw(z, order.max = 5)
+# Yule Walker to estimate AR coefficient (z1)
+ts.yw <- ar.yw(z1, order.max = 5)
 ts.yw
-summary(ts.yw)
+summary(ts.yw) # also suggested 3
 
-# Try AR(3, 1) - best
-fit = arima(x = y, order=c(3,1,0)) 
-fit
-tsdiag(fit)
-AIC(fit)
-BIC(fit)
+# Try arima(3, 1, 0) from yule walker est on differenced data
+fit310 = arima(x = y, order=c(3,1,0)) 
+fit310
+tsdiag(fit310)
+AIC(fit310) # 511.994
+BIC(fit310) # 522.3745
 
-plot(1:100, y, xlim=c(0,100), ylim=c(50,250), main="Number of users connected to internet over Time",
+# Forecast for arima(3, 1, 0)
+plot(1:100, y, xlim=c(0,120), ylim=c(-100,500), main="Fitted and Forecast Values for ARIMA(3, 1, 0)",
      xlab="Time (minute)", ylab="Number of users connected")
 lines(1:100,y,type="l")
-lines(fitted(fit),col="blue")
+lines(fitted(fit310),col="blue")
+forecast310 = predict(fit310, n.ahead=20)
+lines(101:120, forecast310$pred, type="o", col="red")
+lines(101:120, forecast310$pred-1.96*forecast310$se, col="blue") #lower limit of confidence interval
+lines(101:120, forecast310$pred+1.96*forecast310$se, col="blue") #upper limit of confidence interval
 
-fit3 = arima(x = y, order=c(1,1,1)) 
-fit3
-tsdiag(fit3)
-AIC(fit3)
-BIC(fit3)
+# Try arima(1, 1, 1) suggested by auto.arima
+fitauto <- auto.arima(y,max.p = 5,max.q = 5,max.P = 5,max.Q = 5,max.d = 3,seasonal = FALSE,ic = 'aicc')
+fit111 = arima(x = y, order=c(1,1,1)) 
+fit111
+tsdiag(fit111)
+AIC(fit111) # 514.2995
+BIC(fit111) # 522.0848 (lower BIC than arima(3,1,0))
 
-fit2 = arima(x = z, order=c(3,0,0)) 
-fit2
-tsdiag(fit2)
-AIC(fit2)
-BIC(fit2)
+plot(1:100, y, xlim=c(0,120), ylim=c(-100,500), main="Fitted and Forecast Values for ARIMA(1, 1, 1)",
+     xlab="Time (minute)", ylab="Number of users connected")
+lines(1:100,y,type="l")
+lines(fitted(fit111),col="blue")
+forecast111 = predict(fit111, n.ahead=20)
+lines(101:120, forecast111$pred, type="o", col="red")
+lines(101:120, forecast111$pred-1.96*forecast111$se, col="blue") #lower limit of confidence interval
+lines(101:120, forecast111$pred+1.96*forecast111$se, col="blue") #upper limit of confidence interval
 
-lines(fitted(fit),col="blue")
+# Apply two time differencing
+z2=diff(z1)
+length(z2)
+min(z2)
+max(z2)
+plot(1:98,z2,xlim=c(0,100),ylim=c(-10,10), main="Time Plot after two-time differencing") # Plot time plot after differencing
+lines(1:98,z2,type="l")
+acf(z2, lag.max = 30)  # does not cut off until lag  27 
+pacf(z2) # cut off after lag 2
 
-plot (1:100, y, xlim=c(0,100), ylim=c(50,250))
-lines(1:100, y, type="l")
-lines(fitted(fit),col="red")
-#lines(1:100, y - fit$residuals, type="l", col="red") #yhat = y-fit$residuals (e)
+# Yule Walker to estimate AR coefficient (z2)
+ts.yw <- ar.yw(z2, order.max = 5)
+ts.yw
+summary(ts.yw) # also suggested 2
 
-# Test two times differencing
-h=diff(z)
-length(h)
-min(h) # find min h
-max(h) # find min h
-plot(1:98,h,xlim=c(0,100),ylim=c(-10,10)) # Plot time plot after differencing
-lines(1:98,h,type="l")
-acf(h)
-pacf(h)
-autofit = auto.arima(h, max.p = 5,max.q = 5,max.P = 5,max.Q = 5,max.d = 3,seasonal = FALSE,ic = 'aicc')
-autofit
-fit4 = arima(x = y, order=c(5,2,5)) 
-fit4
-tsdiag(fit4)
+# Try arima(2, 2, 0) based on Yule Walker est on z2
+fit220 = arima(x = y, order=c(2,2,0)) 
+fit220
+tsdiag(fit220)
+AIC(fit220) # 511.4645 (lower than arima(1,1,1))
+BIC(fit220) # 519.2194 (lower than arima(1,1,1))
+
+plot(1:100, y, xlim=c(0,120), ylim=c(-100,500), main="Fitted and Forecast Values for ARIMA(2, 2, 0)",
+     xlab="Time (minute)", ylab="Number of users connected")
+lines(1:100,y,type="l")
+lines(fitted(fit220),col="blue")
+forecast220 = predict(fit220, n.ahead=20)
+lines(101:120, forecast220$pred, type="o", col="red")
+lines(101:120, forecast220$pred-1.96*forecast220$se, col="blue") #lower limit of confidence interval
+lines(101:120, forecast220$pred+1.96*forecast220$se, col="blue") #upper limit of confidence interval
+
+# Try arima(5, 2, 5) with lowest AIC via brute force testing
+fit525 = arima(x = y, order=c(5,2,5)) 
+fit525
+tsdiag(fit525)
+AIC(fit525) # 509.8135 (lowest AIC)
+BIC(fit525) # 538.2481
+
+plot(1:100, y, xlim=c(0,120), ylim=c(-100,500), main="Fitted and Forecast Values for ARIMA(5, 2, 5)",
+     xlab="Time (minute)", ylab="Number of users connected")
+lines(1:100,y,type="l")
+lines(fitted(fit525),col="blue")
+forecast525 = predict(fit525, n.ahead=20)
+lines(101:120, forecast525$pred, type="o", col="red")
+lines(101:120, forecast525$pred-1.96*forecast525$se, col="blue") #lower limit of confidence interval
+lines(101:120, forecast525$pred+1.96*forecast525$se, col="blue") #upper limit of confidence interval
+
+plot(forecast(fit310,h=20), ylim=c(-100,500))
+plot(forecast(fit111,h=20), ylim=c(-100,500))
+plot(forecast(fit220,h=20), ylim=c(-100,500))
+plot(forecast(fit525,h=20), ylim=c(-100,500))
 
 
