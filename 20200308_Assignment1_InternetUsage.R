@@ -51,6 +51,7 @@ lines(101:120, forecast310$pred+1.96*forecast310$se, col="blue") #upper limit of
 
 # Try arima(1, 1, 1) suggested by auto.arima
 fitauto <- auto.arima(y,max.p = 5,max.q = 5,max.P = 5,max.Q = 5,max.d = 3,seasonal = FALSE,ic = 'aicc')
+fitauto
 fit111 = arima(x = y, order=c(1,1,1)) 
 fit111
 tsdiag(fit111)
@@ -118,4 +119,25 @@ plot(forecast(fit111,h=20), ylim=c(-100,500))
 plot(forecast(fit220,h=20), ylim=c(-100,500))
 plot(forecast(fit525,h=20), ylim=c(-100,500))
 
+acctest <- window(y, start=91, end=100)
+accuracy(forecast(fit310), acctest)
+accuracy(forecast(fit111), acctest)
+accuracy(forecast(fit220), acctest)
+accuracy(forecast(fit525), acctest)
+
+library(forecast)
+checkresiduals(fit310)
+checkresiduals(fit111)
+checkresiduals(fit220)
+checkresiduals(fit525)
+
+library(sarima)
+sfit310 <- sarima(y, p = 3, d = 1, q = 0) #4.676866
+sfit310$ttable
+sfit111 <- sarima(y, p = 1, d = 1, q = 1) #4.664191
+sfit111$ttable
+sfit220 <- sarima(y, p = 2, d = 2, q = 0) #4.844786
+sfit220$ttable
+sfit525 <- sarima(y, p = 5, d = 2, q = 5) #4.628987
+sfit525$ttable
 

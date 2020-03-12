@@ -8,9 +8,9 @@ AIC(fit)
 fit
 
 # Use brute force to obtain min AIC and BIC models
-pArr <- seq(0 , 9, by = 1)
+pArr <- seq(0 , 5, by = 1)
 dArr <- seq(0 , 3, by = 1) # at most 3 times differencing
-qArr <- seq(0 , 9, by = 1)
+qArr <- seq(0 , 5, by = 1)
 corder <- NA
 aic <- NA
 bic <- NA

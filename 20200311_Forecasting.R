@@ -20,6 +20,7 @@ alp=alpha[ind] #0.79
 
 ###use alp to forecast
 fc1=ses(oildata, alpha=alp, initial="simple" , h=5)
+?plot
 plot(fc1, PI=F, ylab="Oil (millions of tonnes)",
      xlab="Year", main="Forecast oil production", 
      fcol="white", type="o")
