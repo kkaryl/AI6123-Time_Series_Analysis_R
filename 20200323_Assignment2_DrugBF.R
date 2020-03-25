@@ -52,7 +52,7 @@ for (p in pArr) {
             rmsee <- NA
             tryCatch({
               fit <-arima(ts_train, order=c(p,d,q), seasonal=list(order=c(P,D,Q),period=12))
-              pred <- forecast(fit, h = length(ts_val))$mean
+              pred <- exp(forecast(fit, h = length(ts_val)+20)$mean)
               aicc <- AIC(fit)
               bicc <- BIC(fit)
               rmsee <- accuracy(pred, ts_all)[2]
@@ -78,8 +78,10 @@ for (p in pArr) {
 }
 aicInd <- which(aic == min(aic, na.rm = TRUE))
 bicInd <- which(bic == min(bic, na.rm = TRUE))
+rsmeInd <- which(rsmeInd == min(rsmeInd, na.rm = TRUE))
 message(sprintf("Best AIC: %s Order: %s", aic[aicInd], corder[aicInd]))
 message(sprintf("Best BIC: %s Order: %s", bic[bicInd], corder[bicInd]))
+message(sprintf("Best BIC: %s Order: %s", rsmeInd[bicInd], corder[bicInd]))
 
 #stop cluster
 print(Sys.time()-strt)

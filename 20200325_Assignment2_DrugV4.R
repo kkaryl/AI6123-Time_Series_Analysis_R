@@ -11,6 +11,8 @@ library(lubridate) # for converting data to year month day
 # library(caTools)
 library(astsa)
 library(forecast)
+library(ggplot2)
+library(tseries)
 
 source('assignment2/helpers.R')
 
@@ -42,9 +44,8 @@ num_of_train <- round(0.7 * length(ts_all))
 ts_train <- head(ts_all, num_of_train)
 ts_val <- tail(ts_all, round(length(ts_all) - num_of_train))
 
-
 ### Find suitable SARIMA model
-
+nyear = 2
 plot.ts
 ts_all_d = diff(ts_all, differences = 1)
 length(ts_all_d)
@@ -55,28 +56,57 @@ plotts(ts_all_d_D, "blue")
 acf(coredata(ts_all_d_D))
 
 acf(df_data_d1, lag.max=12*5)
-acf(coredata(ts_all_d_D), lag.max=12*5)
-pacf(coredata(ts_all_d_D), lag.max=12*5)
+ggAcf(coredata(ts_all_d_D), lag.max=12*nyear)
+ggPacf(coredata(ts_all_d_D), lag.max=12*nyear)
 
 # to find optimal lambda
 lambda = BoxCox.lambda(ts_all)
 # now to transform vector
-ts_all_bc = BoxCox(ts_all,lambda)
+ts_train_bc = BoxCox(ts_train,lambda)
 
-plotts(ts_all,"blue")
-plotts(ts_all_bc, "blue")
+plotts(ts_train,"blue")
+plotts(ts_train_bc, "blue")
 
-ts_all_bc_d = diff(ts_all_bc, differences = 1)
-plotts(ts_all_bc_d, "blue")
-length(ts_all_bc_d)
-ts_all_bc_dD = diff(ts_all_bc, differences = 1, lag=12)
-plotts(ts_all_bc_dD, "blue")
-length(ts_all_bc_dD)
-acf(coredata(ts_all_bc_dD), lag.max=12*3)
-acf2(coredata(ts_all_bc_dD))
+ts_train_bc_d = diff(ts_train_bc, differences = 1)
+plotts(ts_train_bc_d, "blue")
+length(ts_train_bc_d)
+ggAcf(coredata(ts_train_bc_d), lag.max=12*nyear) # does not cut off
+ggPacf(coredata(ts_train_bc_d), lag.max=12*nyear) # cut off after lag 14
+ts_train_bc_dD = diff(ts_train_bc, differences = 1, lag=12)
+plotts(ts_train_bc_dD, "blue")
+length(ts_train_bc_dD)
+acf(coredata(ts_train_bc_dD), lag.max=12*nyear) # P = 2, p = 3
+pacf(coredata(ts_train_bc_dD), lag.max=12*nyear) # cut off after lag 12 => Q = 1, q=3
 
+fit.arima1 = arima(ts_train_bc, 
+                   order=c(3,1,3), 
+                   seasonal=list(order=c(2,1,1),period=12))
+checkresiduals(fit.arima1)
+tsdiag(fit.arima1)
+summary(fit.arima1)
 
+fit.arima2 = arima(ts_train_bc, 
+                   order=c(3,1,0), 
+                   seasonal=list(order=c(2,1,0),period=12))
+checkresiduals(fit.arima2)
+tsdiag(fit.arima2)
+summary(fit.arima2)
 
+fit.autoarima = arima(ts_train, 
+                      order=c(0,1,2), 
+                      seasonal=list(order=c(0,1,1),period=12))
+checkresiduals(fit.autoarima)
+tsdiag(fit.autoarima)
+summary(fit.autoarima)
+
+ts_train_log = log(ts_train)
+fit.autoarimabc= arima(ts_train_log, 
+                        order=c(0,1,1), 
+                        seasonal=list(order=c(0,1,2),period=12))
+fit.autoarimabc
+checkresiduals(fit.autoarimabc)
+tsdiag(fit.autoarimabc)
+summary(fit.autoarimabc)
 # ## Transform the lags from years to months
 # acfpl$lag <- acfpl$lag * 12
 # Stationary test
@@ -115,10 +145,10 @@ fit.auto.arima <- auto.arima(ts_train, max.p=5, max.q=5,
 
 fit.auto.arima.boxcox <- auto.arima(ts_train, max.p=5, max.q=5,
                                     max.P=5, max.Q=5, max.d=5, max.D=5, allowdrift = TRUE,
-                                    stepwise=FALSE, approximation=FALSE, lambda="auto", parallel = TRUE)
+                                    stepwise=FALSE, approximation=FALSE, lambda=lambda, parallel = TRUE)
 
 fit.auto.arima
-fit.auto.arima.boxcox
+fit.auto.arima.boxcox   
 # 
 # fit.auto.arima.boxcox <- auto.arima(ts_train, max.p=2, max.q=2,
 #                                     max.P=2, max.Q=2, max.d=2, max.D=2, allowdrift = TRUE,
