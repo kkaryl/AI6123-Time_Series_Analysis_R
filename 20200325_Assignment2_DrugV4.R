@@ -14,6 +14,7 @@ library(forecast)
 
 source('assignment2/helpers.R')
 
+SHOWGRAPHS = TRUE
 SHOWGRAPHS = FALSE
 
 ### Examine data
@@ -33,8 +34,51 @@ ts_all <- ts(df_data$value, start=c(year(global.start), month(global.start)),
 plot.ts <- plotts(ts_all)
 if (SHOWGRAPHS == TRUE)
   plot.ts
-acf2(ts_all, plot=SHOWGRAPHS)
+acf(ts_all, plot=SHOWGRAPHS)
+length(ts_all)
 
+### Split dataset to train test set
+num_of_train <- round(0.7 * length(ts_all))
+ts_train <- head(ts_all, num_of_train)
+ts_val <- tail(ts_all, round(length(ts_all) - num_of_train))
+
+
+### Find suitable SARIMA model
+
+plot.ts
+ts_all_d = diff(ts_all, differences = 1)
+length(ts_all_d)
+plotts(ts_all_d, "blue")
+ts_all_d_D = diff(ts_all, differences = 1, lag=12)
+length(ts_all_d_D)
+plotts(ts_all_d_D, "blue")
+acf(coredata(ts_all_d_D))
+
+acf(df_data_d1, lag.max=12*5)
+acf(coredata(ts_all_d_D), lag.max=12*5)
+pacf(coredata(ts_all_d_D), lag.max=12*5)
+
+# to find optimal lambda
+lambda = BoxCox.lambda(ts_all)
+# now to transform vector
+ts_all_bc = BoxCox(ts_all,lambda)
+
+plotts(ts_all,"blue")
+plotts(ts_all_bc, "blue")
+
+ts_all_bc_d = diff(ts_all_bc, differences = 1)
+plotts(ts_all_bc_d, "blue")
+length(ts_all_bc_d)
+ts_all_bc_dD = diff(ts_all_bc, differences = 1, lag=12)
+plotts(ts_all_bc_dD, "blue")
+length(ts_all_bc_dD)
+acf(coredata(ts_all_bc_dD), lag.max=12*3)
+acf2(coredata(ts_all_bc_dD))
+
+
+
+# ## Transform the lags from years to months
+# acfpl$lag <- acfpl$lag * 12
 # Stationary test
 # adf.test(ts_all)
 
@@ -44,11 +88,6 @@ acf2(ts_all, plot=SHOWGRAPHS)
 # 
 # monthplot(ts_all)
 # seasonplot(ts_all)
-
-### Split dataset to train test set
-num_of_train <- round(0.7 * length(ts_all))
-ts_train <- head(ts_all, num_of_train)
-ts_val <- tail(ts_all, round(length(ts_all) - num_of_train))
 
 ### Predict using Holt-Winters' Trend and Seasonality Model
 log_ts_train = log(ts_train)
@@ -69,17 +108,17 @@ if (SHOWGRAPHS == TRUE)
 # grid.arrange(plot.hw, ncol = 1)
 
 ### Predict using Seasonal ARIMA Model
-# acf2(ts_all)
-ts_all_d1 = diff(ts_all, differences = 1)
-plotforecast(ts_all_d1)
-# acf2(ts_all_d1)
-ts_all_d2 = diff(ts_all, differences = 2)
-plotforecast(ts_all_d2)
-# acf2(ts_all_d2)
 
-# fit.auto.arima <- auto.arima(ts_train, max.p=2, max.q=2,
-#                              max.P=2, max.Q=2, max.d=2, max.D=2, allowdrift = TRUE,
-#                              stepwise=FALSE, approximation=FALSE)
+fit.auto.arima <- auto.arima(ts_train, max.p=5, max.q=5,
+                             max.P=5, max.Q=5, max.d=5, max.D=5, allowdrift = TRUE,
+                             stepwise=FALSE, approximation=FALSE, parallel = TRUE)
+
+fit.auto.arima.boxcox <- auto.arima(ts_train, max.p=5, max.q=5,
+                                    max.P=5, max.Q=5, max.d=5, max.D=5, allowdrift = TRUE,
+                                    stepwise=FALSE, approximation=FALSE, lambda="auto", parallel = TRUE)
+
+fit.auto.arima
+fit.auto.arima.boxcox
 # 
 # fit.auto.arima.boxcox <- auto.arima(ts_train, max.p=2, max.q=2,
 #                                     max.P=2, max.Q=2, max.d=2, max.D=2, allowdrift = TRUE,
