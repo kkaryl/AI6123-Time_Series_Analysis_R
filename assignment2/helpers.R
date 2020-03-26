@@ -20,19 +20,22 @@ basictheme <- function() {
         legend.key = element_rect(colour = "black"))
 }
 
-plotts <- function(ts_data, colour="blue") {
+plotts <- function(ts_data, colour="blue", title=NULL) {
+  if (is.null(title)) {
+    title <- global.title
+  }
   ggplot(ts_data, aes(as.Date(as.yearmon(time(ts_data))), as.matrix(ts_data))) + 
     geom_line(colour = colour)+
     ylab(global.ylab) + 
     xlab(global.xlab) + 
-    ggtitle(global.title)+
+    ggtitle(title)+
     basictheme()
 }
 
 
 plotAcf2 <- function(ts_data, lag.max=NULL, plot=TRUE, title=NULL) {
   if (is.null(title)) {
-    title <- deparse(substitute(ts_data)) %>% print()
+    title <- deparse(substitute(ts_data))
   }
   acfPlot <- ggAcf(ts_data, lag.max = lag.max, plot = FALSE)
   pacfPlot <- ggPacf(ts_data, lag.max = lag.max, plot = FALSE)
@@ -91,7 +94,5 @@ plotforecast <- function(ts_all, ...) {
     ylab("")+
     xlab("")+
     ggtitle(global.title)+
-    theme(axis.line = element_line(), axis.text=element_text(color='black'),
-          axis.title = element_text(colour = 'black'), legend.text=element_text(),
-          legend.title=element_text(), legend.key = element_rect(colour = "black"))
+    basictheme()
 }
