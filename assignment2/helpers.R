@@ -1,5 +1,6 @@
 library(zoo) # for converting data to year month
 library(ggplot2)
+library(gridExtra)
 
 'Requires the following global variables:
 - global.title
@@ -9,15 +10,46 @@ library(ggplot2)
 - global.pred.start
 - global.pred.end
 '
+basictheme <- function() {
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.line = element_line(), 
+        axis.text=element_text(color='black'),
+        axis.title = element_text(colour = 'black'), 
+        legend.text=element_text(),
+        legend.title=element_text(), 
+        legend.key = element_rect(colour = "black"))
+}
+
 plotts <- function(ts_data, colour="blue") {
   ggplot(ts_data, aes(as.Date(as.yearmon(time(ts_data))), as.matrix(ts_data))) + 
     geom_line(colour = colour)+
     ylab(global.ylab) + 
     xlab(global.xlab) + 
     ggtitle(global.title)+
-    theme(axis.line = element_line(), axis.text=element_text(color='black'),
-          axis.title = element_text(colour = 'black'), legend.text=element_text(),
-          legend.title=element_text(), legend.key = element_rect(colour = "black"))
+    basictheme()
+}
+
+
+plotAcf2 <- function(ts_data, lag.max=NULL, plot=TRUE, title=NULL) {
+  if (is.null(title)) {
+    title <- deparse(substitute(ts_data)) %>% print()
+  }
+  acfPlot <- ggAcf(ts_data, lag.max = lag.max, plot = FALSE)
+  pacfPlot <- ggPacf(ts_data, lag.max = lag.max, plot = FALSE)
+  acfPlot$series <- title   # update title
+  pacfPlot$series <- title  # update title
+  
+  if (plot) {
+    acfPlot <- autoplot(acfPlot)
+    pacfPlot <- autoplot(pacfPlot)
+    
+    grid.arrange(acfPlot, pacfPlot, ncol = 1)
+  }
+  else {
+    newlist <- list(acfPlot, pacfPlot)
+    return(newlist)
+  }
+  
 }
 
 plotmulti <- function(ts_all, ...) {
