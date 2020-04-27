@@ -13,13 +13,13 @@ library(ggplot2)
 library(gridExtra)
 library(tseries)
 
-source('assignment2/ggplothelpers.R')
+source('ggplothelpers.R')
 
 SHOWGRAPHS = TRUE
 # SHOWGRAPHS = FALSE
 
 ### Examine data
-df_data = read.delim("./data/drug.txt", header=TRUE, sep = ",")
+df_data = read.delim("../data/drug.txt", header=TRUE, sep = ",")
 head(df_data)
 nrow(df_data)
 global.title <<- "Monthly Anti-diabetic Drug Sales"
@@ -166,6 +166,9 @@ lambda = 0
 fit.tslm <- tslm(ts_train ~ trend + season, lambda=lambda)
 pred.tslm <- forecast(fit.tslm, h = length(ts_test)+20)$mean
 acc.tslm <- accuracy(pred.tslm, ts_all) %>% print()
+
+global.pred.start <<- start(pred.tslm) %>% print()
+global.pred.end <<- end(pred.tslm) %>% print()
 
 plot.tslm <- plotforecast(ts_all, pred.tslm, "TSLM")
 if (SHOWGRAPHS == TRUE)

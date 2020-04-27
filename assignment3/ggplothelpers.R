@@ -46,8 +46,8 @@ plotAcf2 <- function(ts_data, lag.max=NULL, plot=TRUE, title=NULL) {
   if (is.null(title)) {
     title <- deparse(substitute(ts_data))
   }
-  acfPlot <- ggAcf(ts_data, lag.max = lag.max, plot = FALSE)
-  pacfPlot <- ggPacf(ts_data, lag.max = lag.max, plot = FALSE)
+  acfPlot <- ggAcf(ts_data, lag.max = lag.max, plot = FALSE, na.action = na.omit)
+  pacfPlot <- ggPacf(ts_data, lag.max = lag.max, plot = FALSE, na.action = na.omit)
   acfPlot$series <- title   # update title
   pacfPlot$series <- title  # update title
   
