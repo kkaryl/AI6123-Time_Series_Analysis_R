@@ -1,6 +1,6 @@
 # AI6123: Time Series Analysis
 
-This repository contains source code implementation of assignments for NTU's MSAI'19 Sem2 course AI6123 on Time Series Analysis.
+This repository contains source code implementation of assignments for NTU's MSAI course AI6123 on Time Series Analysis (2019 Sem 2).
 
 There are multiple R coding exercises during lectures and a total of 3 individual assignments.
 
