@@ -3,8 +3,8 @@
 .RData
 .Ruserdata
 
+assignment1/plots/
 assignment2/plots/
+assignment3/plots/
 
-assignment2/G1903467L_Assignment2.pdf
-
-assignment2/G1903467L_Assignment2.zip
+*.png

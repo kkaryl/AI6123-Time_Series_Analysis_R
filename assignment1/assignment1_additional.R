@@ -1,16 +1,9 @@
 y = scan("./data/wwwusage.txt", skip = 1)
 
-# Use auto.arima to find a suitable model
-library(forecast)
-fit <- auto.arima(y,max.p = 5,max.q = 5,max.P = 5,max.Q = 5,max.d = 3,seasonal = FALSE,ic = 'aicc')
-plot(forecast(fit,h=20))
-AIC(fit)
-fit
-
 # Use brute force to obtain min AIC and BIC models
-pArr <- seq(0 , 5, by = 1)
+pArr <- seq(0 , 9, by = 1)
 dArr <- seq(0 , 3, by = 1) # at most 3 times differencing
-qArr <- seq(0 , 5, by = 1)
+qArr <- seq(0 , 9, by = 1)
 corder <- NA
 aic <- NA
 bic <- NA
